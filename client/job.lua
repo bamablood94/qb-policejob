@@ -811,3 +811,49 @@ CreateThread(function()
         Wait(sleep)
     end
 end)
+
+--TARGET STUFF--
+RegisterNetEvent('police:client:openFingerprint')
+AddEventHandler('police:client:openFingerprint', function()
+    local player, distance = GetClosestPlayer()
+    if player ~= -1 and distance < 2.5 then
+        local playerId = GetPlayerServerId(player)
+        TriggerServerEvent("police:server:showFingerprint", playerId)
+    else
+        QBCore.Functions.Notify("No one nearby!", "error")
+    end
+end)
+
+RegisterNetEvent('police:client:openStash')
+AddEventHandler('police:client:openStash', function()
+    TriggerServerEvent("inventory:server:OpenInventory", "stash", "policestash_"..QBCore.Functions.GetPlayerData().citizenid)
+    TriggerEvent("inventory:client:SetCurrentStash", "policestash_"..QBCore.Functions.GetPlayerData().citizenid)
+end)
+
+RegisterNetEvent('police:client:openArmory')
+AddEventHandler('police:client:openArmory', function()
+    local authorizedItems = {
+        label = "Police Armory",
+        slots = 30,
+        items = {}
+    }
+    local index = 1
+    for _, armoryItem in pairs(Config.Items.items) do
+        for i=1, #armoryItem.authorizedJobGrades do
+            if armoryItem.authorizedJobGrades[i] == PlayerJob.grade.level then
+                authorizedItems.items[index] = armoryItem
+                authorizedItems.items[index].slot = index
+                index = index + 1
+            end
+        end
+    end
+    SetWeaponSeries()
+    TriggerServerEvent("inventory:server:OpenInventory", "shop", "police", authorizedItems)
+end)
+RegisterNetEvent('policejob:client:dutyToggle')
+AddEventHandler('policejob:client:dutyToggle', function()
+    onDuty = not onDuty
+    TriggerServerEvent("police:server:UpdateCurrentCops")
+    TriggerServerEvent("QBCore:ToggleDuty")
+    TriggerServerEvent("police:server:UpdateBlips")
+end)
