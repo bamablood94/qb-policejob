@@ -7,6 +7,8 @@ local CurrentBlooddrop = nil
 local Fingerprints = {}
 local CurrentFingerprint = 0
 local shotAmount = 0
+local GunShotAlert = false
+local ShotsFired = 0
 
 local StatusList = {
     ['fight'] = Lang:t('evidence.red_hands'),
@@ -213,6 +215,32 @@ CreateThread(function()
     end
 end)
 
+Citizen.CreateThread(function() -- Gunshot Alert
+	while true do
+		Citizen.Wait(4)
+		if isLoggedIn then
+		  	if IsPedShooting(PlayerPedId()) then
+		   		if QBCore.Functions.GetPlayerData().job.name ~= "police" then
+		  			local Weapon = GetSelectedPedWeapon(PlayerPedId())
+		  			local SilentWeapon = IsWeaponSilent(Weapon)
+		  			local GunCategory = GetWeaponCategory(Weapon)
+		  			if not SilentWeapon then
+						if not GunShotAlert then
+		  					GunShotAlert = true
+		  					TriggerServerEvent('qb-police:server:send:alert:gunshots', GetEntityCoords(PlayerPedId()), GunCategory, QBCore.Functions.GetStreetLabel(), IsPedInAnyVehicle(PlayerPedId()))
+		  					Citizen.SetTimeout(20000, function()
+		  					 	GunShotAlert = false
+		  		 			end)
+						end
+		    		end
+		  		end
+			end
+	  	else
+			Citizen.Wait(1000)
+		end
+	end
+end)
+
 CreateThread(function() -- Gunpowder Status when shooting
     while true do
         Wait(1)
@@ -231,6 +259,8 @@ CreateThread(function() -- Gunpowder Status when shooting
         end
     end
 end)
+
+
 
 CreateThread(function()
     while true do
