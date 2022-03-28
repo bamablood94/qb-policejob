@@ -13,8 +13,6 @@ Config.MaxSpikes = 5
 Config.HandCuffItem = 'handcuffs'
 
 Config.LicenseRank = 4
-
-Config.UseTarget = GetConvar('UseTarget', 'false') == 'true'
 Config.Locations = {
     ["duty"] = {
         [1] = vector3(440.085, -974.924, 30.689),
